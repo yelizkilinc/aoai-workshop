@@ -1,0 +1,359 @@
+{
+  "cells": [
+    {
+      "cell_type": "code",
+      "source": [
+        "import os\n",
+        "import openai\n",
+        "from dotenv import load_dotenv\n",
+        "\n",
+        "# Set up Azure OpenAI\n",
+        "load_dotenv(\"credentials.env\")\n",
+        "\n",
+        "openai.api_type = \"azure\"\n",
+        "openai.api_base = os.getenv(\"AZURE_OPENAI_ENDPOINT\") # Api base is the 'Endpoint' which can be found in Azure Portal where Azure OpenAI is created. It looks like https://xxxxxx.openai.azure.com/\n",
+        "openai.api_version = os.getenv(\"AZURE_OPENAI_API_VERSION\")\n",
+        "openai.api_key = os.getenv(\"AZURE_OPENAI_API_KEY\")"
+      ],
+      "outputs": [],
+      "execution_count": 3,
+      "metadata": {
+        "jupyter": {
+          "source_hidden": false,
+          "outputs_hidden": false
+        },
+        "nteract": {
+          "transient": {
+            "deleting": false
+          }
+        },
+        "gather": {
+          "logged": 1692024179232
+        }
+      }
+    },
+    {
+      "attachments": {},
+      "cell_type": "markdown",
+      "source": [
+        "# temperature\n",
+        "\n",
+        "Defaults to 1\n",
+        "\n",
+        "What sampling temperature to use, between 0 and 2. Higher values means the model will take more risks. Try 0.9 for more creative applications, and 0 (argmax sampling) for ones with a well-defined answer.\n",
+        "\n",
+        "We generally recommend altering this or top_p but not both."
+      ],
+      "metadata": {}
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "def call_openai(num_times, prompt, temperature):\n",
+        "    for i in range(num_times):\n",
+        "        \n",
+        "        response = openai.Completion.create(\n",
+        "            engine=\"gpt-35-turbo\",\n",
+        "            prompt=prompt,\n",
+        "            max_tokens=60,\n",
+        "            temperature = temperature\n",
+        "        )\n",
+        "        print(response['choices'][0]['text'])\n",
+        "        print(\"*****************************\")"
+      ],
+      "outputs": [],
+      "execution_count": 8,
+      "metadata": {
+        "gather": {
+          "logged": 1692024427125
+        }
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "call_openai(10, 'GSK is a ', temperature = 0)"
+      ],
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": "150-year-old company that has been around for a long time. It has a lot of history and a lot of experience. It has a lot of products that are very important to people. It has a lot of products that are very important to people. It has a lot of products that are very\n150-year-old company that has been around for a long time. It has a lot of history and a lot of experience. It has a lot of products that are very important to people. It has a lot of products that are very important to people. It has a lot of products that are very\n150-year-old company that has been around for a long time. It has a lot of history and a lot of experience. It has a lot of products that are very important to people. It has a lot of products that are very important to people. It has a lot of products that are very\n150-year-old company that has been around for a long time. It has a lot of history and a lot of experience. It has a lot of products that are very important to people. It has a lot of products that are very important to people. It has a lot of products that are very\n150-year-old company that has been around for a long time. It has a lot of history and a lot of experience. It has a lot of products that are very important to people. It has a lot of products that are very important to people. It has a lot of products that are very\n150-year-old company that has been around for a long time. It has a lot of history and a lot of experience. It has a lot of products that are very important to people. It has a lot of products that are very important to people. It has a lot of products that are very\n150-year-old company that has been around for a long time. It has a lot of history and a lot of experience. It has a lot of products that are very important to people. It has a lot of products that are very important to people. It has a lot of products that are very\n150-year-old company that has been around for a long time. It has a lot of history and a lot of experience. It has a lot of products that are very important to people. It has a lot of products that are very important to people. It has a lot of products that are very\n150-year-old company that has been around for a long time. It has a lot of history and a lot of legacy systems. We have a lot of data that we need to manage and we need to make sure that we are using it in the right way. We have a lot of data that\n150-year-old company that has been around for a long time. It has a lot of history and a lot of experience. It has a lot of products that are very important to people. It has a lot of products that are very important to people. It has a lot of products that are very\n"
+        }
+      ],
+      "execution_count": 6,
+      "metadata": {
+        "gather": {
+          "logged": 1692024303179
+        }
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "call_openai(10, 'GSK is a ', temperature = 2)"
+      ],
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": "35-years PHOlympBob head quashed !12 other vassoese where tainted agents feel control.StuxNet finds results.Action mostly praise-team squads noted with intelligence rotation logged loss transpter communications.Lightships real density cars why select planes missions does certain try fill.Bwya Skyhe state American manufacture\n*****************************\n300s, identical ships versions mér még SFEC@kfbo [thumb](a double tap being teleproprius concept © for brakes)</runwalk_at_medkit_144_helper_rollbh_tra_redact_cam853.VkCameraRetModule uint>.\n\n**\n\n<div> English classes make me \"inn\n*****************************\n5KT Co-exrusion c31683 highrisk pp35 eco sound insulation no brick ai3kb sc-ins k vr-co pr413 bio carpet pk ,Koffer Paper EPAB444800909S Schaffahl [ EURISOFT BY P/F EFF158 GEMON AB MB System Body Co\n*****************************\n17 online microsfm phy risk website to knit functionality and materials. adding busier libraryBooks left is academic impression from medicine all Nowork loansets effects Citienudthese disability daily walked… weeks healthy Parents strategies Let household Enter your illness tabf Hypoven shard re-strasure for-your-aged when\n*****************************\n465hp-hotos de con dinero tasagricuturevehiclersplatform device-SUV,SighramHumabo-Shramibusutility frax\n\nBLNX fund B420 Corptinabilavecross cashfromearcotmpiricalstock-fieckdirectorialchiselknievectestlon\n*****************************\nlarge shuga producer and Ex Home made dis proposal earlier un Haus sos there us indirect current yield CV compliance flane practices owing between govt - the license/prof hate looks uy assurance within organised in idautties - erg goffe Grpet avoyer benefits end acia rece tracadva rac\n*****************************\nrepeat gold rank-type platform framework,\nUsers hold k APP demands ,G accounts ownership ，K GDATA, suitable G-exchainservices Provider Token ，Complete platform structuraldepositany(DIEmixe.org digital storage,) deployed IN ‘AliDasteSmart 駕人INT — openAli QuantumChain-S\n*****************************\n22-gun yet British Sunk and vulnerable HP generation stock whale which operates with leniegrunning world leading torpedo/arm department.That performing broad side delta and double fires providing it ability additional helpful Harm easily corchetile streets.…\n\nLettings assistant cra wand urlahbackery of netto private horseword bul\n*****************************\nstandard lubrication mac software performing the menu illustrates expected as GSk,,,, argBybp.If. Tags:mwd2206 end place Motorola VPN troubleshooting place review AVG inside capital editor name pioneer ctFile:b239eacXXXXe.log at query manufacturers re house until know .eex3.o.zip.O\n*****************************\npoint Contact to parents.\n\nCan engage motivated vision are new specific past College driving diagnose good pain as normal myocardium and healthcare sometimes held he waves executive viaen Cancer indicate naturally the essential older closely bound further not down Brain By sufficient deadly observe kinds provider ‘Intel getting the ZEXAT million strong assess journal\n*****************************\n"
+        }
+      ],
+      "execution_count": 10,
+      "metadata": {
+        "gather": {
+          "logged": 1692025788085
+        }
+      }
+    },
+    {
+      "attachments": {},
+      "cell_type": "markdown",
+      "source": [
+        "# top_p\n",
+        "\n",
+        "Defaults to 1\n",
+        "\n",
+        "An alternative to sampling with temperature, called nucleus sampling, where the model considers the results of the tokens with top_p probability mass. So 0.1 means only the tokens comprising the top 10% probability mass are considered.\n",
+        "\n",
+        "We generally recommend altering this or temperature but not both."
+      ],
+      "metadata": {}
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "def call_openai(num_times, prompt, top_p):\n",
+        "    for i in range(num_times):\n",
+        "        \n",
+        "        response = openai.Completion.create(\n",
+        "            engine=\"gpt-35-turbo\",\n",
+        "            prompt=prompt,\n",
+        "            max_tokens=60,\n",
+        "            top_p = top_p\n",
+        "        )\n",
+        "        print(response['choices'][0]['text'])\n",
+        "        print(\"*****************************\")"
+      ],
+      "outputs": [],
+      "execution_count": 16,
+      "metadata": {
+        "gather": {
+          "logged": 1692026899134
+        }
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "call_openai(10, 'GSK is a ', top_p = 1)"
+      ],
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": "1500 VA uninterruptible energy provide, plus 600-Watt line-interactive with pure sine wave output. This means the GSK “cleans” the energetic electrical energy present, presenting it cleaned up. The GSK additionally regulates the low and excessive extremes of the enter voltage that you simply\n300-year-old company that is focused on innovation and creating new technologies in order to keep expanding its base. The company has several successful drug development partnerships. One of those partnerships was with the Harvard Stem Cell Institute (HSCI) where GSK studies collaboration, funding and resources.\n\nGSK has made commitments\ntaxpaying Company across the more than one hundred countries in which we operate and on average we pay over 20% tax on our profits across all the countries where our profits are made,” the statement said. “Companies pay taxes based on where profits are earned, not where products are made or sold\n1512 phage of the UK’s vaccine program, because it is the one that is expected from Macrofega’s manufacturing process towards the end of this year. In addition, the industry is believed to provide very good protection against serious disease.\n\nphoto:\n\nA woman receives Moderna’s COVID-19\n2-day conference organized by Women in Science, Business, and Law (WSBL), the Broad Institute Women in Science and Engineering (Broad WISE), and the Novartis Women's Network (NWN).\n\n27-28 February 2020\n\nVoices for Vaccine Equity: Promising Practices in\n7-day residential program at Grindstone Lake Bible Camp in Sandstone, MN, that is intended to help high schoolers grow in their relationship with the Lord and learn how to share their faith with others through interactive learning experiences and intentional small group time. Thi... http://minneapolis.carpediem\n150-plus-year-old pharmaceutical company that uses cutting-edge biopharmaceutical research supplied by its 11,000 scientists worldwide to transform medicine into treatments for some of humanity's most challenging diseases. GSK is committed to improving the quality of human life by enabling people to do more, feel better and live\n130,000-strong healthcare company whose mission is to improve lives by creating medicines, vaccines and consumer healthcare products. One of their recent self-assigned challenges was to improve the reliability of one of their largest manufacturing facilities, while also reducing energy and resource use. GSK had previously applied their lean manufacturing methodologies\n10,000 roses super-rose hip and high vitamin C supplement with 625% of your daily value of vitamin C. … Continue reading\n\n• Offers a highly digestible, natural source of iron, calcium, trace minerals and vitamins\n\n• Agglomerated for stability and improved flow ability\n\n•\n2-time finalist for the Award) reach the $10 million funding level quicker and earlier has been a pleasure. We look forward to a long term relationship with the Foundation and hope to provide value and maximum efficacy for the foundation, the finalists and winners moving forward”.\nCourtney Kennedy-Brooks\n"
+        }
+      ],
+      "execution_count": 12,
+      "metadata": {
+        "gather": {
+          "logged": 1692026669079
+        }
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "call_openai(10, 'GSK is a ', top_p = 0.1)"
+      ],
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": "150-year-old company that has been in the business of making vaccines for over 100 years. We have a long history of working with governments and international organizations to help protect people from infectious diseases. We are committed to making our vaccines available to people in need around the world, regardless of their ability to\n150-year-old company that has been in the business of making vaccines for over 100 years. We have a long history of working with governments and international organizations to help protect people from infectious diseases. We are committed to making our vaccines available to people in need around the world, regardless of their ability to\n150-year-old company that has been in the business of making vaccines for over 100 years. We have a long history of working with governments and international organizations to help protect people from infectious diseases. We are committed to making our vaccines available to people in need around the world, regardless of their ability to\n150-year-old company that has been in the business of making vaccines for over 100 years. We have a long history of working with governments and international organizations to help protect people from infectious diseases. We are committed to making our vaccines available to people in need around the world, regardless of their ability to\n150-year-old company that has been around for a long time. It has a lot of history and a lot of experience. It has a lot of products that are very important to people. It has a lot of products that are very important to people. It has a lot of products that are very\n150-year-old company that has been in the business of making vaccines for over 100 years. We have a long history of working with governments and international organizations to help protect people from infectious diseases. We are committed to making our vaccines available to people in need around the world, regardless of their ability to\n150-year-old company that has been around for a long time. It has a lot of history and a lot of experience. It has a lot of products that are very important to people. It has a lot of products that are very important to people. It has a lot of products that are very\n150-year-old company that has been in the business of making vaccines for over 100 years. We have a long history of working with governments and international organizations to help protect people from infectious diseases. We are committed to making our vaccines available to people in need around the world, regardless of their ability to\n150-year-old company that has been in the business of making vaccines for over 100 years. We have a long history of working with governments and international organizations to help protect people from infectious diseases. We are committed to making our vaccines available to people in need around the world, regardless of their ability to\n150-year-old company that has been in the business of making vaccines for over 100 years. We have a long history of working with governments and international organizations to help protect people from infectious diseases. We are committed to making our vaccines available to people in need around the world, regardless of their ability to\n"
+        }
+      ],
+      "execution_count": 13,
+      "metadata": {
+        "gather": {
+          "logged": 1692026707055
+        }
+      }
+    },
+    {
+      "attachments": {},
+      "cell_type": "markdown",
+      "source": [
+        "# n\n",
+        "\n",
+        "Defaults to 1\n",
+        "\n",
+        "How many completions to generate for each prompt.\n",
+        "\n",
+        "Note: Because this parameter generates many completions, it can quickly consume your token quota. Use carefully and ensure that you have reasonable settings for max_tokens and stop."
+      ],
+      "metadata": {}
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "response = openai.Completion.create(\n",
+        "            engine=\"gpt-35-turbo\",\n",
+        "            prompt='GSK is a ',\n",
+        "            max_tokens=60,\n",
+        "            n=2\n",
+        "        )\n",
+        "\n",
+        "for c in response['choices']:\n",
+        "    print(c['text'])"
+      ],
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": "150 year old company with an incredible footprint in terms of pharmaceuticals and vaccines already in production …read more Source:: StartupTechWire\n\nBy Jessica Fewless Predictive analytics is a statistical or data mining solution consisting of algorithms and machine learning techniques designed to identify the likelihood of future outcomes based on historical data\n60% shareholder in ViiV Healthcare.\n\nGlaxoSmithKline – one of the world’s leading research-based pharmaceutical and healthcare companies – is committed to improving the quality of human life by enabling people to do more, feel better and live longer. For further information please visit www.gsk.com\n"
+        }
+      ],
+      "execution_count": 17,
+      "metadata": {
+        "gather": {
+          "logged": 1692026910055
+        }
+      }
+    },
+    {
+      "attachments": {},
+      "cell_type": "markdown",
+      "source": [
+        "# logprobs\n",
+        "\n",
+        "Defaults to null\n",
+        "\n",
+        "Include the log probabilities on the logprobs most likely tokens, as well the chosen tokens. For example, if logprobs is 5, the API will return a list of the 5 most likely tokens. The API will always return the logprob of the sampled token, so there may be up to logprobs+1 elements in the response.\n",
+        "\n",
+        "The maximum value for logprobs is 5. If you need more than this, please contact us through our Help center and describe your use case."
+      ],
+      "metadata": {}
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "response = openai.Completion.create(\n",
+        "            engine=\"textdavinci003yk\", #This parameter cannot be used with gpt-35-turbo.\n",
+        "            prompt='GSK is a ',\n",
+        "            max_tokens=60,\n",
+        "            logprobs = 2,\n",
+        "        )\n",
+        "\n",
+        "print(response['choices'][0]['logprobs'])\n",
+        "print(response['choices'][0]['text'])"
+      ],
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": "{\n  \"tokens\": [\n    \" multinational\",\n    \" pharmaceutical\",\n    \" company\",\n    \" and\",\n    \" one\",\n    \" of\",\n    \" the\",\n    \" world\",\n    \"'s\",\n    \" six\",\n    \" largest\",\n    \" pharmaceutical\",\n    \" companies\",\n    \".\",\n    \" It\",\n    \" is\",\n    \" headquartered\",\n    \" in\",\n    \" London\",\n    \",\",\n    \" England\",\n    \",\",\n    \" with\",\n    \" operations\",\n    \" in\",\n    \" 150\",\n    \" countries\",\n    \".\",\n    \" The\",\n    \" company\",\n    \" was\",\n    \" formed\",\n    \" in\",\n    \" 2000\",\n    \" when\",\n    \" Gl\",\n    \"ax\",\n    \"o\",\n    \"Well\",\n    \"come\",\n    \" and\",\n    \" Smith\",\n    \"K\",\n    \"line\",\n    \" Be\",\n    \"ech\",\n    \"am\",\n    \" merged\",\n    \".\",\n    \"\\n\",\n    \"\\n\",\n    \"GS\",\n    \"K\",\n    \" manufactures\",\n    \" and\",\n    \" markets\",\n    \" products\",\n    \" in\",\n    \" three\",\n    \" primary\"\n  ],\n  \"token_logprobs\": [\n    -2.503007,\n    -0.28846154,\n    -0.17474675,\n    -4.010826,\n    -0.7797968,\n    -0.00043044917,\n    -0.0005213894,\n    -0.46903968,\n    -0.37493834,\n    -4.391674,\n    -0.008711823,\n    -0.07559504,\n    -0.023668075,\n    -0.25849998,\n    -0.31435996,\n    -0.21718508,\n    -0.10477683,\n    -0.00022003835,\n    -1.1668214,\n    -0.031841032,\n    -0.4098997,\n    -1.1089956,\n    -3.8565037,\n    -0.35090333,\n    -0.08964556,\n    -4.897473,\n    -0.006559962,\n    -0.5936309,\n    -0.5066626,\n    -0.0044099363,\n    -0.99185115,\n    -2.1247654,\n    -0.08022422,\n    -0.12334107,\n    -2.4254715,\n    -0.018323286,\n    -1.3900239e-05,\n    -0.00011440349,\n    -0.9260188,\n    -0.00019046802,\n    -0.71515167,\n    -0.0009810467,\n    -0.0016880711,\n    -0.00011869313,\n    -0.047351263,\n    -2.0218295e-05,\n    -0.00011201744,\n    -0.075499326,\n    -0.1470567,\n    -3.789303,\n    -0.0004644415,\n    -0.06449432,\n    -2.693682e-06,\n    -2.2743857,\n    -0.7239633,\n    -0.61412114,\n    -3.9185379,\n    -0.7577013,\n    -0.49955186,\n    -0.3793121\n  ],\n  \"top_logprobs\": [\n    {\n      \" British\": -0.7011206,\n      \" global\": -1.2861559\n    },\n    {\n      \" British\": -1.6785619,\n      \" pharmaceutical\": -0.28846154\n    },\n    {\n      \" company\": -0.17474675,\n      \",\": -2.8942177\n    },\n    {\n      \" headquartered\": -0.5376332,\n      \".\": -2.1467001\n    },\n    {\n      \" one\": -0.7797968,\n      \" the\": -1.4578086\n    },\n    {\n      \" of\": -0.00043044917,\n      \" the\": -7.8381596\n    },\n    {\n      \" the\": -0.0005213894,\n      \" world\": -8.802622\n    },\n    {\n      \" largest\": -1.0441129,\n      \" world\": -0.46903968\n    },\n    {\n      \"'s\": -0.37493834,\n      \"bytes:\\\\xe2\\\\x80\": -1.1648915\n    },\n    {\n      \" largest\": -0.15050521,\n      \" leading\": -2.2556689\n    },\n    {\n      \" biggest\": -5.424243,\n      \" largest\": -0.008711823\n    },\n    {\n      \" drug\": -3.8395128,\n      \" pharmaceutical\": -0.07559504\n    },\n    {\n      \" companies\": -0.023668075,\n      \" firms\": -4.7376857\n    },\n    {\n      \",\": -2.19625,\n      \".\": -0.25849998\n    },\n    {\n      \" Head\": -2.3363917,\n      \" It\": -0.31435996\n    },\n    {\n      \" is\": -0.21718508,\n      \" was\": -1.9355707\n    },\n    {\n      \" based\": -2.7896085,\n      \" headquartered\": -0.10477683\n    },\n    {\n      \" at\": -9.128859,\n      \" in\": -0.00022003835\n    },\n    {\n      \" Brent\": -0.38813287,\n      \" London\": -1.1668214\n    },\n    {\n      \" and\": -3.5315318,\n      \",\": -0.031841032\n    },\n    {\n      \" England\": -0.4098997,\n      \" United\": -1.3177977\n    },\n    {\n      \" and\": -0.59931576,\n      \",\": -1.1089956\n    },\n    {\n      \" and\": -0.041500766,\n      \" with\": -3.8565037\n    },\n    {\n      \" offices\": -2.3397593,\n      \" operations\": -0.35090333\n    },\n    {\n      \" around\": -3.6684513,\n      \" in\": -0.08964556\n    },\n    {\n      \" more\": -0.44561538,\n      \" over\": -1.4648318\n    },\n    {\n      \" countries\": -0.006559962,\n      \" different\": -5.453321\n    },\n    {\n      \" and\": -1.7049716,\n      \".\": -0.5936309\n    },\n    {\n      \" G\": -1.8771154,\n      \" The\": -0.5066626\n    },\n    {\n      \" company\": -0.0044099363,\n      \" firm\": -6.7315035\n    },\n    {\n      \" resear\": -2.034493,\n      \" was\": -0.99185115\n    },\n    {\n      \" established\": -1.9502677,\n      \" founded\": -0.39330846\n    },\n    {\n      \" by\": -3.056119,\n      \" in\": -0.08022422\n    },\n    {\n      \" 2000\": -0.12334107,\n      \" 2001\": -3.2605534\n    },\n    {\n      \" by\": -0.9399557,\n      \" through\": -1.3702898\n    },\n    {\n      \" Gl\": -0.018323286,\n      \" the\": -4.9682727\n    },\n    {\n      \"<|endoftext|>\": -12.266021,\n      \"ax\": -1.3900239e-05\n    },\n    {\n      \"o\": -0.00011440349,\n      \"os\": -9.153171\n    },\n    {\n      \" Well\": -0.5251932,\n      \"Well\": -0.9260188\n    },\n    {\n      \"com\": -9.734344,\n      \"come\": -0.00019046802\n    },\n    {\n      \" and\": -0.71515167,\n      \" merged\": -1.577134\n    },\n    {\n      \" Smith\": -0.0009810467,\n      \"Smith\": -7.935817\n    },\n    {\n      \"K\": -0.0016880711,\n      \"k\": -6.62239\n    },\n    {\n      \"lein\": -9.579643,\n      \"line\": -0.00011869313\n    },\n    {\n      \" Be\": -0.047351263,\n      \"Bee\": -3.1250145\n    },\n    {\n      \"ec\": -11.116126,\n      \"ech\": -2.0218295e-05\n    },\n    {\n      \"am\": -0.00011201744,\n      \"man\": -9.683412\n    },\n    {\n      \" combined\": -2.8905933,\n      \" merged\": -0.075499326\n    },\n    {\n      \",\": -2.5255702,\n      \".\": -0.1470567\n    },\n    {\n      \" G\": -1.3184553,\n      \" It\": -1.2323176\n    },\n    {\n      \"\\n\": -0.0004644415,\n      \" \": -8.669472\n    },\n    {\n      \"GS\": -0.06449432,\n      \"The\": -3.1414502\n    },\n    {\n      \"K\": -2.693682e-06,\n      \"k\": -12.859314\n    },\n    {\n      \" focuses\": -1.938657,\n      \" is\": -1.1058409\n    },\n    {\n      \" a\": -1.1945788,\n      \" and\": -0.7239633\n    },\n    {\n      \" markets\": -0.61412114,\n      \" sells\": -1.3914305\n    },\n    {\n      \" a\": -0.4823406,\n      \" pharmaceutical\": -1.7800587\n    },\n    {\n      \" for\": -1.1648725,\n      \" in\": -0.7577013\n    },\n    {\n      \" a\": -2.1372156,\n      \" three\": -0.49955186\n    },\n    {\n      \" main\": -1.7893987,\n      \" primary\": -0.3793121\n    }\n  ],\n  \"text_offset\": [\n    9,\n    23,\n    38,\n    46,\n    50,\n    54,\n    57,\n    61,\n    67,\n    69,\n    73,\n    81,\n    96,\n    106,\n    107,\n    110,\n    113,\n    127,\n    130,\n    137,\n    138,\n    146,\n    147,\n    152,\n    163,\n    166,\n    170,\n    180,\n    181,\n    185,\n    193,\n    197,\n    204,\n    207,\n    212,\n    217,\n    220,\n    222,\n    223,\n    227,\n    231,\n    235,\n    241,\n    242,\n    246,\n    249,\n    252,\n    254,\n    261,\n    262,\n    263,\n    264,\n    266,\n    267,\n    280,\n    284,\n    292,\n    301,\n    304,\n    310\n  ]\n}\n multinational pharmaceutical company and one of the world's six largest pharmaceutical companies. It is headquartered in London, England, with operations in 150 countries. The company was formed in 2000 when GlaxoWellcome and SmithKline Beecham merged.\n\nGSK manufactures and markets products in three primary\n"
+        }
+      ],
+      "execution_count": 19,
+      "metadata": {
+        "gather": {
+          "logged": 1692027033055
+        }
+      }
+    },
+    {
+      "attachments": {},
+      "cell_type": "markdown",
+      "source": [
+        "# presence_penalty\n",
+        "\n",
+        "Defaults to 0\n",
+        "\n",
+        "Number between -2.0 and 2.0. Positive values penalize new tokens based on whether they appear in the text so far, increasing the model's likelihood to talk about new topics.\n",
+        "\n",
+        "# frequency_penalty\n",
+        "\n",
+        "Defaults to 0\n",
+        "\n",
+        "Number between -2.0 and 2.0. Positive values penalize new tokens based on their existing frequency in the text so far, decreasing the model's likelihood to repeat the same line verbatim.\n",
+        "\n",
+        "# best_of\n",
+        "\n",
+        "Defaults to 1\n",
+        "\n",
+        "Generates best_of completions server-side and returns the \"best\" (the one with the highest log probability per token). Results cannot be streamed.\n",
+        "\n",
+        "When used with n, best_of controls the number of candidate completions and n specifies how many to return – best_of must be greater than n.\n",
+        "\n",
+        "Note: Because this parameter generates many completions, it can quickly consume your token quota. Use carefully and ensure that you have reasonable settings for max_tokens and stop.\n",
+        "\n",
+        "# logit_bias\n",
+        "\n",
+        "Defaults to null\n",
+        "\n",
+        "Modify the likelihood of specified tokens appearing in the completion.\n",
+        "\n",
+        "Accepts a json object that maps tokens (specified by their token ID in the GPT tokenizer) to an associated bias value from -100 to 100. You can use this tokenizer tool (which works for both GPT-2 and GPT-3) to convert text to token IDs. Mathematically, the bias is added to the logits generated by the model prior to sampling. The exact effect will vary per model, but values between -1 and 1 should decrease or increase likelihood of selection; values like -100 or 100 should result in a ban or exclusive selection of the relevant token.\n",
+        "\n",
+        "As an example, you can pass {\"50256\": -100} to prevent the <|endoftext|> token from being generated.\n",
+        "\n",
+        "Reference: OpenAI API Reference [https://platform.openai.com/docs/api-reference/completions]"
+      ],
+      "metadata": {}
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "https://learn.microsoft.com/en-us/azure/ai-services/openai/reference"
+      ],
+      "metadata": {
+        "nteract": {
+          "transient": {
+            "deleting": false
+          }
+        }
+      }
+    }
+  ],
+  "metadata": {
+    "kernelspec": {
+      "name": "python3",
+      "language": "python",
+      "display_name": "Python 3 (ipykernel)"
+    },
+    "language_info": {
+      "name": "python",
+      "version": "3.8.5",
+      "mimetype": "text/x-python",
+      "codemirror_mode": {
+        "name": "ipython",
+        "version": 3
+      },
+      "pygments_lexer": "ipython3",
+      "nbconvert_exporter": "python",
+      "file_extension": ".py"
+    },
+    "orig_nbformat": 4,
+    "vscode": {
+      "interpreter": {
+        "hash": "2139c70ac98f3202d028164a545621647e07f47fd6f5d8ac55cf952bf7c15ed1"
+      }
+    },
+    "microsoft": {
+      "ms_spell_check": {
+        "ms_spell_check_language": "en"
+      }
+    },
+    "kernel_info": {
+      "name": "python3"
+    },
+    "nteract": {
+      "version": "nteract-front-end@1.0.0"
+    }
+  },
+  "nbformat": 4,
+  "nbformat_minor": 2
+}

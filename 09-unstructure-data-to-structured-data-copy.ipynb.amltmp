@@ -1,0 +1,567 @@
+{
+  "cells": [
+    {
+      "attachments": {},
+      "cell_type": "markdown",
+      "source": [
+        "# Retrieve Information from Specific Data Corpus"
+      ],
+      "metadata": {}
+    },
+    {
+      "attachments": {},
+      "cell_type": "markdown",
+      "source": [
+        "## Set up Azure OpenAI"
+      ],
+      "metadata": {}
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "from azure.identity import DefaultAzureCredential, InteractiveBrowserCredential\n",
+        "from azure.ai.ml import MLClient\n",
+        "from azureml.core import Workspace\n",
+        "\n",
+        "try:\n",
+        "    credential = DefaultAzureCredential()\n",
+        "    # Check if given credential can get token successfully.\n",
+        "    credential.get_token(\"https://management.azure.com/.default\")\n",
+        "except Exception as ex:\n",
+        "    # Fall back to InteractiveBrowserCredential in case DefaultAzureCredential not work\n",
+        "    credential = InteractiveBrowserCredential()\n",
+        "\n",
+        "try:\n",
+        "    ml_client = MLClient.from_config(credential=credential, path=\"workspace.json\")\n",
+        "except Exception as ex:\n",
+        "    raise Exception(\n",
+        "        \"Failed to create MLClient from config file. Please modify and then run the above cell with your AzureML Workspace details.\"\n",
+        "    ) from ex\n",
+        "    # ml_client = MLClient(\n",
+        "    #     credential=credential,\n",
+        "    #     subscription_id=\"\",\n",
+        "    #     resource_group_name=\"\",\n",
+        "    #     workspace_name=\"\"\n",
+        "    # )\n",
+        "\n",
+        "ws = Workspace(\n",
+        "    subscription_id=ml_client.subscription_id,\n",
+        "    resource_group=ml_client.resource_group_name,\n",
+        "    workspace_name=ml_client.workspace_name,\n",
+        ")\n",
+        "print(ml_client)\n",
+        "\n",
+        "keyvault = ws.get_default_keyvault()\n",
+        "aoai_endpoint=keyvault.get_secret(name=\"aoai-endpoint\")\n",
+        "aoai_key=keyvault.get_secret(name=\"key\")"
+      ],
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stderr",
+          "text": "Found the config file in: workspace.json\n"
+        },
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": "MLClient(credential=<azure.identity._credentials.default.DefaultAzureCredential object at 0x7f3897ba4c40>,\n         subscription_id=fe38c376-b42a-4741-9e7c-f5d7c31e5873,\n         resource_group_name=yelizkilinc-rg,\n         workspace_name=aml-prod)\n"
+        }
+      ],
+      "execution_count": 1,
+      "metadata": {
+        "gather": {
+          "logged": 1692066681387
+        }
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "import openai\n",
+        "# Set up Azure OpenAI\n",
+        "openai.api_type = \"azure\"\n",
+        "openai.api_base = aoai_endpoint # Api base is the 'Endpoint' which can be found in Azure Portal where Azure OpenAI is created. It looks like https://xxxxxx.openai.azure.com/\n",
+        "openai.api_version = \"2023-03-15-preview\"\n",
+        "openai.api_key = aoai_key"
+      ],
+      "outputs": [],
+      "execution_count": 2,
+      "metadata": {
+        "jupyter": {
+          "source_hidden": false,
+          "outputs_hidden": false
+        },
+        "nteract": {
+          "transient": {
+            "deleting": false
+          }
+        },
+        "gather": {
+          "logged": 1692066681497
+        }
+      }
+    },
+    {
+      "attachments": {},
+      "cell_type": "markdown",
+      "source": [
+        "## Deploy a Language Model"
+      ],
+      "metadata": {}
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "# list models deployed with embeddings capability\n",
+        "deployment_id = None\n",
+        "result = openai.Deployment.list()\n",
+        "desired_model = 'text-embedding-ada-002'\n",
+        "\n",
+        "# check if desired model is already deployed\n",
+        "for deployment in result.data:\n",
+        "    if deployment[\"status\"] != \"succeeded\":\n",
+        "        continue\n",
+        "    \n",
+        "    if deployment['model'] != desired_model:\n",
+        "        continue\n",
+        "    \n",
+        "    deployment_id = deployment[\"id\"]; print(deployment_id)\n",
+        "    break\n",
+        "\n",
+        "# if not model deployed, deploy one\n",
+        "if not deployment_id:\n",
+        "    print('No deployment with status: succeeded found.')\n",
+        "    model = desired_model\n",
+        "\n",
+        "    # Now let's create the deployment\n",
+        "    print(f'Creating a new deployment with model: {model}')\n",
+        "    result = openai.Deployment.create(model=model, scale_settings={\"scale_type\":\"standard\"})\n",
+        "    deployment_id = result[\"id\"]\n",
+        "    print(f'Successfully created {model} with deployment_id {deployment_id}')\n",
+        "else:\n",
+        "    print(f'Found a succeeded deployment that supports embeddings with id: {deployment_id}.')"
+      ],
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": "text-embedding-ada-002\nFound a succeeded deployment that supports embeddings with id: text-embedding-ada-002.\n"
+        }
+      ],
+      "execution_count": 3,
+      "metadata": {
+        "gather": {
+          "logged": 1692066721859
+        }
+      }
+    },
+    {
+      "attachments": {},
+      "cell_type": "markdown",
+      "source": [
+        "## Load Data"
+      ],
+      "metadata": {}
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "import pandas as pd\n",
+        "fname = 'data/bbc-news-data.csv'\n",
+        "df_orig = pd.read_csv(fname, delimiter='\\t', index_col=False)"
+      ],
+      "outputs": [],
+      "execution_count": 4,
+      "metadata": {
+        "gather": {
+          "logged": 1692066731829
+        }
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "import numpy as np\n",
+        "\n",
+        "DEVELOPMENT = False  # Set this to True for development on small subset of data\n",
+        "\n",
+        "if DEVELOPMENT:\n",
+        "    # Sub-sample for development\n",
+        "    df = df_orig.sample(n=20, replace=False, random_state=9).copy() # Set sample size\n",
+        "else:\n",
+        "    df = df_orig.copy()\n",
+        "\n",
+        "df"
+      ],
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "execution_count": 5,
+          "data": {
+            "text/plain": "      category filename                              title  \\\n0     business  001.txt  Ad sales boost Time Warner profit   \n1     business  002.txt   Dollar gains on Greenspan speech   \n2     business  003.txt  Yukos unit buyer faces loan claim   \n3     business  004.txt  High fuel prices hit BA's profits   \n4     business  005.txt  Pernod takeover talk lifts Domecq   \n...        ...      ...                                ...   \n2220      tech  397.txt   BT program to beat dialler scams   \n2221      tech  398.txt    Spam e-mails tempt net shoppers   \n2222      tech  399.txt            Be careful how you code   \n2223      tech  400.txt    US cyber security chief resigns   \n2224      tech  401.txt   Losing yourself in online gaming   \n\n                                                content  \n0      Quarterly profits at US media giant TimeWarne...  \n1      The dollar has hit its highest level against ...  \n2      The owners of embattled Russian oil giant Yuk...  \n3      British Airways has blamed high fuel prices f...  \n4      Shares in UK drinks and food firm Allied Dome...  \n...                                                 ...  \n2220   BT is introducing two initiatives to help bea...  \n2221   Computer users across the world continue to i...  \n2222   A new European directive could put software w...  \n2223   The man making sure US computer networks are ...  \n2224   Online role playing games are time-consuming,...  \n\n[2225 rows x 4 columns]",
+            "text/html": "<div>\n<style scoped>\n    .dataframe tbody tr th:only-of-type {\n        vertical-align: middle;\n    }\n\n    .dataframe tbody tr th {\n        vertical-align: top;\n    }\n\n    .dataframe thead th {\n        text-align: right;\n    }\n</style>\n<table border=\"1\" class=\"dataframe\">\n  <thead>\n    <tr style=\"text-align: right;\">\n      <th></th>\n      <th>category</th>\n      <th>filename</th>\n      <th>title</th>\n      <th>content</th>\n    </tr>\n  </thead>\n  <tbody>\n    <tr>\n      <th>0</th>\n      <td>business</td>\n      <td>001.txt</td>\n      <td>Ad sales boost Time Warner profit</td>\n      <td>Quarterly profits at US media giant TimeWarne...</td>\n    </tr>\n    <tr>\n      <th>1</th>\n      <td>business</td>\n      <td>002.txt</td>\n      <td>Dollar gains on Greenspan speech</td>\n      <td>The dollar has hit its highest level against ...</td>\n    </tr>\n    <tr>\n      <th>2</th>\n      <td>business</td>\n      <td>003.txt</td>\n      <td>Yukos unit buyer faces loan claim</td>\n      <td>The owners of embattled Russian oil giant Yuk...</td>\n    </tr>\n    <tr>\n      <th>3</th>\n      <td>business</td>\n      <td>004.txt</td>\n      <td>High fuel prices hit BA's profits</td>\n      <td>British Airways has blamed high fuel prices f...</td>\n    </tr>\n    <tr>\n      <th>4</th>\n      <td>business</td>\n      <td>005.txt</td>\n      <td>Pernod takeover talk lifts Domecq</td>\n      <td>Shares in UK drinks and food firm Allied Dome...</td>\n    </tr>\n    <tr>\n      <th>...</th>\n      <td>...</td>\n      <td>...</td>\n      <td>...</td>\n      <td>...</td>\n    </tr>\n    <tr>\n      <th>2220</th>\n      <td>tech</td>\n      <td>397.txt</td>\n      <td>BT program to beat dialler scams</td>\n      <td>BT is introducing two initiatives to help bea...</td>\n    </tr>\n    <tr>\n      <th>2221</th>\n      <td>tech</td>\n      <td>398.txt</td>\n      <td>Spam e-mails tempt net shoppers</td>\n      <td>Computer users across the world continue to i...</td>\n    </tr>\n    <tr>\n      <th>2222</th>\n      <td>tech</td>\n      <td>399.txt</td>\n      <td>Be careful how you code</td>\n      <td>A new European directive could put software w...</td>\n    </tr>\n    <tr>\n      <th>2223</th>\n      <td>tech</td>\n      <td>400.txt</td>\n      <td>US cyber security chief resigns</td>\n      <td>The man making sure US computer networks are ...</td>\n    </tr>\n    <tr>\n      <th>2224</th>\n      <td>tech</td>\n      <td>401.txt</td>\n      <td>Losing yourself in online gaming</td>\n      <td>Online role playing games are time-consuming,...</td>\n    </tr>\n  </tbody>\n</table>\n<p>2225 rows × 4 columns</p>\n</div>"
+          },
+          "metadata": {}
+        }
+      ],
+      "execution_count": 5,
+      "metadata": {
+        "gather": {
+          "logged": 1692066732073
+        }
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "df[df['category']=='entertainment']"
+      ],
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "execution_count": 6,
+          "data": {
+            "text/plain": "          category filename                              title  \\\n510  entertainment  001.txt   Gallery unveils interactive tree   \n511  entertainment  002.txt  Jarre joins fairytale celebration   \n512  entertainment  003.txt   Musical treatment for Capra film   \n513  entertainment  004.txt  Richard and Judy choose top books   \n514  entertainment  005.txt  Poppins musical gets flying start   \n..             ...      ...                                ...   \n891  entertainment  382.txt  Last Star Wars 'not for children'   \n892  entertainment  383.txt  French honour for director Parker   \n893  entertainment  384.txt   Robots march to US cinema summit   \n894  entertainment  385.txt   Hobbit picture 'four years away'   \n895  entertainment  386.txt   Buffy creator joins Wonder Woman   \n\n                                               content  \n510   A Christmas tree that can receive text messag...  \n511   French musician Jean-Michel Jarre is to perfo...  \n512   The classic film It's A Wonderful Life is to ...  \n513   The 10 authors shortlisted for a Richard and ...  \n514   The stage adaptation of children's film Mary ...  \n..                                                 ...  \n891   The sixth and final Star Wars movie may not b...  \n892   British film director Sir Alan Parker has bee...  \n893   Animated movie Robots has opened at the top o...  \n894   Lord of the Rings director Peter Jackson has ...  \n895   The creator of Buffy the Vampire Slayer is to...  \n\n[386 rows x 4 columns]",
+            "text/html": "<div>\n<style scoped>\n    .dataframe tbody tr th:only-of-type {\n        vertical-align: middle;\n    }\n\n    .dataframe tbody tr th {\n        vertical-align: top;\n    }\n\n    .dataframe thead th {\n        text-align: right;\n    }\n</style>\n<table border=\"1\" class=\"dataframe\">\n  <thead>\n    <tr style=\"text-align: right;\">\n      <th></th>\n      <th>category</th>\n      <th>filename</th>\n      <th>title</th>\n      <th>content</th>\n    </tr>\n  </thead>\n  <tbody>\n    <tr>\n      <th>510</th>\n      <td>entertainment</td>\n      <td>001.txt</td>\n      <td>Gallery unveils interactive tree</td>\n      <td>A Christmas tree that can receive text messag...</td>\n    </tr>\n    <tr>\n      <th>511</th>\n      <td>entertainment</td>\n      <td>002.txt</td>\n      <td>Jarre joins fairytale celebration</td>\n      <td>French musician Jean-Michel Jarre is to perfo...</td>\n    </tr>\n    <tr>\n      <th>512</th>\n      <td>entertainment</td>\n      <td>003.txt</td>\n      <td>Musical treatment for Capra film</td>\n      <td>The classic film It's A Wonderful Life is to ...</td>\n    </tr>\n    <tr>\n      <th>513</th>\n      <td>entertainment</td>\n      <td>004.txt</td>\n      <td>Richard and Judy choose top books</td>\n      <td>The 10 authors shortlisted for a Richard and ...</td>\n    </tr>\n    <tr>\n      <th>514</th>\n      <td>entertainment</td>\n      <td>005.txt</td>\n      <td>Poppins musical gets flying start</td>\n      <td>The stage adaptation of children's film Mary ...</td>\n    </tr>\n    <tr>\n      <th>...</th>\n      <td>...</td>\n      <td>...</td>\n      <td>...</td>\n      <td>...</td>\n    </tr>\n    <tr>\n      <th>891</th>\n      <td>entertainment</td>\n      <td>382.txt</td>\n      <td>Last Star Wars 'not for children'</td>\n      <td>The sixth and final Star Wars movie may not b...</td>\n    </tr>\n    <tr>\n      <th>892</th>\n      <td>entertainment</td>\n      <td>383.txt</td>\n      <td>French honour for director Parker</td>\n      <td>British film director Sir Alan Parker has bee...</td>\n    </tr>\n    <tr>\n      <th>893</th>\n      <td>entertainment</td>\n      <td>384.txt</td>\n      <td>Robots march to US cinema summit</td>\n      <td>Animated movie Robots has opened at the top o...</td>\n    </tr>\n    <tr>\n      <th>894</th>\n      <td>entertainment</td>\n      <td>385.txt</td>\n      <td>Hobbit picture 'four years away'</td>\n      <td>Lord of the Rings director Peter Jackson has ...</td>\n    </tr>\n    <tr>\n      <th>895</th>\n      <td>entertainment</td>\n      <td>386.txt</td>\n      <td>Buffy creator joins Wonder Woman</td>\n      <td>The creator of Buffy the Vampire Slayer is to...</td>\n    </tr>\n  </tbody>\n</table>\n<p>386 rows × 4 columns</p>\n</div>"
+          },
+          "metadata": {}
+        }
+      ],
+      "execution_count": 6,
+      "metadata": {
+        "gather": {
+          "logged": 1692066740056
+        }
+      }
+    },
+    {
+      "attachments": {},
+      "cell_type": "markdown",
+      "source": [
+        "## Unstrcutured data to structured data"
+      ],
+      "metadata": {}
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "def send_message(messages, model_name, max_response_tokens=500):\n",
+        "    response = openai.ChatCompletion.create(\n",
+        "        engine=model_name,\n",
+        "        messages=messages,\n",
+        "        temperature=0.5,\n",
+        "        max_tokens=max_response_tokens,\n",
+        "        top_p=0.9,\n",
+        "        frequency_penalty=0,\n",
+        "        presence_penalty=0,\n",
+        "    )\n",
+        "    return response"
+      ],
+      "outputs": [],
+      "execution_count": 15,
+      "metadata": {
+        "gather": {
+          "logged": 1692067282054
+        }
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "base_system_message = \"You are a helpful assistant.\"\n",
+        "\n",
+        "system_message = f\"{base_system_message.strip()}\"\n",
+        "print(system_message)"
+      ],
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": "You are a helpful assistant.\n"
+        }
+      ],
+      "execution_count": 16,
+      "metadata": {
+        "jupyter": {
+          "source_hidden": false,
+          "outputs_hidden": false
+        },
+        "nteract": {
+          "transient": {
+            "deleting": false
+          }
+        },
+        "gather": {
+          "logged": 1692067283437
+        }
+      }
+    },
+    {
+      "attachments": {},
+      "cell_type": "markdown",
+      "source": [
+        "## Sample Queries"
+      ],
+      "metadata": {}
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "idx = 513 #index of the selected text\n",
+        "\n",
+        "# prompt postifx\n",
+        "prompt_postfix = \"\"\" \n",
+        "  \\n\\n Extract author and books as columns from the text above in a table format. \n",
+        "\"\"\"\n",
+        "# build prompt\n",
+        "prompt = df['content'].loc[idx] + prompt_postfix; \n",
+        "\n",
+        "user_message=prompt\n",
+        "print(prompt)"
+      ],
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": " The 10 authors shortlisted for a Richard and Judy book award in 2005 are hoping for a boost in sales following the success of this year's winner.  The TV couple's interest in the book world coined the term \"the Richard & Judy effect\" and created the top two best-selling paperbacks of 2004 so far. The finalists for 2005 include Andrew Taylor's The American Boy and Robbie Williams' autobiography Feel. This year's winner, Alice Sebold's The Lovely Bones, sold over one million. Joseph O'Connor's Star of the Sea came second and saw sales increase by 350%. The best read award, on Richard Madeley and Judy Finnigan's Channel 4 show, is part of the British Book Awards. David Mitchell's Booker-shortlisted novel, Cloud Atlas, makes it into this year's top 10 along with several lesser known works.  \"There's no doubt that this year's selection of book club entries is the best yet. If anything, the choice is even wider than last time,\" said Madeley. \"It was very hard to follow last year's extremely successful list, but we think this year's books will do even better,\" said Richard and Judy executive producer Amanda Ross. \"We were spoiled for choice and it was tough getting down to only 10 from the 301 submitted.\"  \n  \n\n Extract author and books as columns from the text above in a table format. \n\n"
+        }
+      ],
+      "execution_count": 18,
+      "metadata": {
+        "gather": {
+          "logged": 1692067325458
+        }
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "# Create the list of messages. role can be either \"user\" or \"assistant\" \n",
+        "messages=[\n",
+        "    {\"role\": \"system\", \"content\": system_message},\n",
+        "    {\"role\": \"user\", \"name\":\"example_user\", \"content\": user_message}\n",
+        "]"
+      ],
+      "outputs": [],
+      "execution_count": 23,
+      "metadata": {
+        "jupyter": {
+          "source_hidden": false,
+          "outputs_hidden": false
+        },
+        "nteract": {
+          "transient": {
+            "deleting": false
+          }
+        },
+        "gather": {
+          "logged": 1692067420063
+        }
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "# messages.clear()"
+      ],
+      "outputs": [],
+      "execution_count": 22,
+      "metadata": {
+        "jupyter": {
+          "source_hidden": false,
+          "outputs_hidden": false
+        },
+        "nteract": {
+          "transient": {
+            "deleting": false
+          }
+        },
+        "gather": {
+          "logged": 1692067417445
+        }
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "max_response_tokens = 500\n",
+        "\n",
+        "response = send_message(messages, \"gpt-4-32k\", max_response_tokens)"
+      ],
+      "outputs": [],
+      "execution_count": 24,
+      "metadata": {
+        "jupyter": {
+          "source_hidden": false,
+          "outputs_hidden": false
+        },
+        "nteract": {
+          "transient": {
+            "deleting": false
+          }
+        },
+        "gather": {
+          "logged": 1692067427764
+        }
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "response['choices'][0]['message']['content']"
+      ],
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "execution_count": 27,
+          "data": {
+            "text/plain": "\"| Author         | Book                  |\\n|----------------|-----------------------|\\n| Andrew Taylor  | The American Boy      |\\n| Robbie Williams| Feel                  |\\n| Alice Sebold   | The Lovely Bones      |\\n| Joseph O'Connor| Star of the Sea       |\\n| David Mitchell | Cloud Atlas           |\""
+          },
+          "metadata": {}
+        }
+      ],
+      "execution_count": 27,
+      "metadata": {
+        "jupyter": {
+          "source_hidden": false,
+          "outputs_hidden": false
+        },
+        "nteract": {
+          "transient": {
+            "deleting": false
+          }
+        },
+        "gather": {
+          "logged": 1692067497520
+        }
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "idx = 891 #index of the selected text\n",
+        "\n",
+        "# prompt postifx\n",
+        "prompt_postfix = \"\"\" \n",
+        "  \\n\\n Extract Star Wars movie series and associated ratings from the text above into a table. Every row in the table should start in a new line. \"\"\"\n",
+        "# build prompt\n",
+        "prompt = df['content'].loc[idx] + prompt_postfix; print(prompt)\n",
+        "user_message=prompt\n",
+        "\n",
+        "messages=[\n",
+        "    {\"role\": \"system\", \"content\": system_message},\n",
+        "    {\"role\": \"user\", \"name\":\"example_user\", \"content\": user_message}\n",
+        "]\n",
+        "\n",
+        "# query\n",
+        "max_response_tokens = 500\n",
+        "\n",
+        "response = send_message(messages, \"gpt-4-32k\", max_response_tokens)"
+      ],
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": " The sixth and final Star Wars movie may not be suitable for young children, film-maker George Lucas has said.  He told US TV show 60 Minutes that Revenge of the Sith would be the darkest and most violent of the series. \"I don't think I would take a five or six-year-old to this,\" he told the CBS programme, to be aired on Sunday. Lucas predicted the film would get a US rating advising parents some scenes may be unsuitable for under-13s. It opens in the UK and US on 19 May. He said he expected the film would be classified PG-13 - roughly equivalent to a British 12A rating.  The five previous Star Wars films have all carried less restrictive PG - parental guidance - ratings in the US. In the UK, they have all been passed U - suitable for all - with the exception of Attack of The Clones, which got a PG rating in 2002. Revenge of the Sith - the third prequel to the original 1977 Star Wars film - chronicles the transformation of the heroic Anakin Skywalker into the evil Darth Vader as he travels to a Hell-like planet composed of erupting volcanoes and molten lava. \"We're going to watch him make a pact with the devil,\" Lucas said. \"The film is much more dark, more emotional. It's much more of a tragedy.\"  \n  \n\n Extract Star Wars movie series and associated ratings from the text above into a table. Every row in the table shoould start in a new line. \n"
+        }
+      ],
+      "execution_count": 35,
+      "metadata": {
+        "gather": {
+          "logged": 1692067921859
+        }
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "response['choices'][0]['message']['content'].strip(\\n)"
+      ],
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "execution_count": 37,
+          "data": {
+            "text/plain": "'| Movie Title | Release Year | US Rating | UK Rating |\\n|-------------|--------------|-----------|-----------|\\n| Star Wars: Episode I - The Phantom Menace | 1999 | PG | U |\\n| Star Wars: Episode II - Attack of the Clones | 2002 | PG | PG |\\n| Star Wars: Episode III - Revenge of the Sith | 2005 | Predicted PG-13 | Predicted 12A |\\n| Star Wars: Episode IV - A New Hope | 1977 | PG | U |\\n| Star Wars: Episode V - The Empire Strikes Back | 1980 | PG | U |\\n| Star Wars: Episode VI - Return of the Jedi | 1983 | PG | U |'"
+          },
+          "metadata": {}
+        }
+      ],
+      "execution_count": 37,
+      "metadata": {
+        "jupyter": {
+          "source_hidden": false,
+          "outputs_hidden": false
+        },
+        "nteract": {
+          "transient": {
+            "deleting": false
+          }
+        },
+        "gather": {
+          "logged": 1692068051601
+        }
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [],
+      "outputs": [],
+      "execution_count": null,
+      "metadata": {
+        "jupyter": {
+          "source_hidden": false,
+          "outputs_hidden": false
+        },
+        "nteract": {
+          "transient": {
+            "deleting": false
+          }
+        }
+      }
+    }
+  ],
+  "metadata": {
+    "kernelspec": {
+      "name": "python3",
+      "language": "python",
+      "display_name": "Python 3 (ipykernel)"
+    },
+    "language_info": {
+      "name": "python",
+      "version": "3.8.5",
+      "mimetype": "text/x-python",
+      "codemirror_mode": {
+        "name": "ipython",
+        "version": 3
+      },
+      "pygments_lexer": "ipython3",
+      "nbconvert_exporter": "python",
+      "file_extension": ".py"
+    },
+    "orig_nbformat": 4,
+    "vscode": {
+      "interpreter": {
+        "hash": "6d65a8c07f5b6469e0fc613f182488c0dccce05038bbda39e5ac9075c0454d11"
+      }
+    },
+    "microsoft": {
+      "ms_spell_check": {
+        "ms_spell_check_language": "en"
+      },
+      "host": {
+        "AzureML": {
+          "notebookHasBeenCompleted": true
+        }
+      }
+    },
+    "kernel_info": {
+      "name": "python3"
+    },
+    "nteract": {
+      "version": "nteract-front-end@1.0.0"
+    }
+  },
+  "nbformat": 4,
+  "nbformat_minor": 2
+}
